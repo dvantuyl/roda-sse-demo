@@ -13,10 +13,10 @@
     <button type="submit">Submit</button>
   </form>
 
-  <ul>
-    <li hx-ext="sse" sse-connect="/events" sse-swap="message">
-    </li>
-  </ul>
+  <div hx-ext="sse" sse-connect="/events" sse-swap="message">
+      Contents of this box will be updated in real time
+      with every SSE message received from the chatroom.
+  </div>
 
 
 

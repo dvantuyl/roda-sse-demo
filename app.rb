@@ -15,14 +15,6 @@ class App < Roda
     self.opts[:common_logger]
   end
 
-  def log_output
-    ->(log) {
-      <<~HTML
-        <li>#{log[:event]}</li>
-      HTML
-    }
-  end
-
   route do |r|
     r.root do
       render('index')
@@ -34,16 +26,15 @@ class App < Roda
 
         last_created_at = Time.now.to_i
 
-        App.logger << "\n\nEVENTS-STREAM CONNECTED"
+        App.logger << "SSE: Connected to /events"
 
         while true
           logs = SSE[:logs].where { created_at > last_created_at }.all
           if logs.count > 0
-            App.logger << "\n\nLOGS: #{logs}"
+            App.logger << "SSE: Sending logs: #{logs}"
             last_created_at = logs.map {|log| log[:created_at]}.max
-            output = logs.map(&log_output).join('')
-            App.logger << "\n\nSENDING: #{output}"
-            out << "data: " + output
+            App.logger << "SSE: Last created_at: #{last_created_at}"
+            out << "data: <div>#{logs.map {|log| log[:event]}}</div>\n\n"
           end
 
           sleep 3
