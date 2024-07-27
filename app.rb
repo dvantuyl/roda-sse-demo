@@ -34,7 +34,7 @@ class App < Roda
             App.logger << "SSE: Sending logs: #{logs}"
             last_created_at = logs.map {|log| log[:created_at]}.max
             App.logger << "SSE: Last created_at: #{last_created_at}"
-            out << "data: <div>#{logs.map {|log| log[:event]}}</div>\n\n"
+            out << "data: <li>#{logs.map {|log| log[:event]}}</li>\n\n"
           end
 
           sleep 3
