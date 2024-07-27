@@ -7,6 +7,6 @@ SSE.drop_table? :logs
 
 SSE.create_table? :logs do
   primary_key :id
-  String :event
-  Integer :created_at
+  String :message
+  Integer :timestamp
 end

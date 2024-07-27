@@ -20,38 +20,35 @@ class App < Roda
       render('index')
     end
 
-    r.get "events" do
+    r.get "messages" do
       response['Content-Type'] = 'text/event-stream'
       stream(loop: true, async: true) do |out|
 
-        last_created_at = Time.now.to_i
+        last_timestamp = Time.now.to_i
 
-        App.logger << "SSE: Connected to /events"
+        App.logger << "CONNECTED => /messages"
 
         while true
-          logs = SSE[:logs].where { created_at > last_created_at }.all
+          logs = SSE[:logs].where { timestamp > last_timestamp }.all
           if logs.count > 0
-            App.logger << "SSE: Sending logs: #{logs}"
-            last_created_at = logs.map {|log| log[:created_at]}.max
-            App.logger << "SSE: Last created_at: #{last_created_at}"
-            out << "data: <li>#{logs.map {|log| log[:event]}}</li>\n\n"
+            App.logger << "RECIEVED: #{logs}"
+            last_timestamp = logs.map {|log| log[:timestamp]}.max
+            out << "data: #{logs.map {|log| '<li>' + log[:message] + '</li>'}.join('')}\n\n"
           end
 
-          sleep 3
+          sleep 0.5
         end
       end
     end
 
     r.post "log" do
-      new_log_event = r.body.read
-      SSE[:logs].insert(event: new_log_event, created_at: Time.now.to_i)
+      new_message = r.body.read.split('=').last
+      SSE[:logs].insert(message: new_message, timestamp: Time.now.to_i)
       response.status = 200
 
       <<~HTML
-      <form hx-post="/log">
-        <input type="text" name="log" placeholder="Enter another log message">
-        <button type="submit">Submit</button>
-      </form>
+      <input type="text" name="message" placeholder="Enter your message">
+      <button type="submit">Submit</button>
       HTML
     end
 
