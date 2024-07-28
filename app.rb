@@ -1,55 +1,50 @@
 require 'roda'
-require 'json'
+require_relative './app/components/messages/component'
 
 class App < Roda
-  LOG_FILE_PATH = "./logs/#{ENV['RACK_ENV'] || 'development'}.log"
-
   plugin :common_logger, $stdout
   plugin :streaming
-  plugin :render, views: 'app/views'
 
   # Shared data structure to hold log events
-  SSE = Sequel.connect('extralite://db/sse.db')
 
   def self.logger
     self.opts[:common_logger]
   end
 
+  def self.db
+    Sequel.connect("extralite://db/sse.db")
+  end
+
   route do |r|
     r.root do
-      render('index')
+      <<~HTML
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SSE Example</title>
+        <script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"></script>
+      </head>
+      <body>
+      #{Components::Messages::Component.render()}
+      </body>
+      </html>
+      HTML
     end
 
     r.get "messages" do
       response['Content-Type'] = 'text/event-stream'
       stream(loop: true, async: true) do |out|
-
-        last_timestamp = Time.now.to_i
-
-        App.logger << "CONNECTED => /messages"
-
-        while true
-          logs = SSE[:logs].where { timestamp > last_timestamp }.all
-          if logs.count > 0
-            App.logger << "RECIEVED: #{logs}"
-            last_timestamp = logs.map {|log| log[:timestamp]}.max
-            out << "data: #{logs.map {|log| '<li>' + log[:message] + '</li>'}.join('')}\n\n"
-          end
-
-          sleep 0.5
-        end
+        Components::Messages::Component.stream(out)
       end
     end
 
     r.post "log" do
-      new_message = r.body.read.split('=').last
-      SSE[:logs].insert(message: new_message, timestamp: Time.now.to_i)
-      response.status = 200
+      Components::Messages::Component.add(r.params["message"])
 
-      <<~HTML
-      <input type="text" name="message" placeholder="Enter your message">
-      <button type="submit">Submit</button>
-      HTML
+      "ok"
     end
 
   end
