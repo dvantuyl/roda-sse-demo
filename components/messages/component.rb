@@ -1,5 +1,6 @@
 require_relative 'form_component'
 require_relative 'list_component'
+require_relative 'message_model'
 
 module Components
   module Messages
@@ -19,20 +20,19 @@ module Components
           last_timestamp = Time.now.to_i
 
           while true
-            logs = App.db[:messages].where { timestamp > last_timestamp }.all
+            logs = MessageModel.greater_than(last_timestamp)
 
             if logs.count > 0
               last_timestamp = logs.map {|log| log[:timestamp]}.max
               logs.each(&format_stream_to(out))
             end
 
-            sleep 0.5
+            sleep 0.1
           end
         end
 
         def add(message)
-          timestamp = Time.now.to_i
-          App.db[:messages].insert(message: message, sseid: sseid, timestamp: timestamp)
+          MessageModel.add(message: message, sseid: sseid)
         end
 
 

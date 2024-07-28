@@ -1,18 +1,12 @@
 require 'roda'
-require_relative './app/components/messages/component'
+require_relative './components/messages/component'
 
 class App < Roda
   plugin :common_logger, $stdout
   plugin :streaming
 
-  # Shared data structure to hold log events
-
   def self.logger
     self.opts[:common_logger]
-  end
-
-  def self.db
-    Sequel.connect("extralite://db/sse.db")
   end
 
   route do |r|
@@ -41,7 +35,7 @@ class App < Roda
       end
     end
 
-    r.post "log" do
+    r.post "message" do
       Components::Messages::Component.add(r.params["message"])
 
       "ok"
