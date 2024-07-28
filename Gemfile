@@ -16,3 +16,5 @@ gem "erubi", "~> 1.13"
 gem "tilt", "~> 2.4"
 
 gem "roda-enhanced_logger", "~> 0.5.0"
+
+gem "zeitwerk", "~> 2.6"

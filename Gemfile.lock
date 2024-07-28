@@ -84,6 +84,7 @@ GEM
     tty-color (0.6.0)
     tty-logger (0.6.0)
       pastel (~> 0.8)
+    zeitwerk (2.6.16)
 
 PLATFORMS
   arm64-darwin-23
@@ -97,6 +98,7 @@ DEPENDENCIES
   roda-enhanced_logger (~> 0.5.0)
   sequel (~> 5.82)
   tilt (~> 2.4)
+  zeitwerk (~> 2.6)
 
 BUNDLED WITH
    2.5.9

@@ -1,5 +1,8 @@
 require 'roda'
-require_relative './components/messages/component'
+require "zeitwerk"
+loader = Zeitwerk::Loader.new
+loader.push_dir("components")
+loader.setup
 
 class App < Roda
   plugin :common_logger, $stdout
@@ -22,7 +25,7 @@ class App < Roda
         <script src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"></script>
       </head>
       <body>
-      #{Components::Messages::Component.render()}
+      #{MessagesComponent::Component.render()}
       </body>
       </html>
       HTML
@@ -31,17 +34,16 @@ class App < Roda
     r.get "messages" do
       response['Content-Type'] = 'text/event-stream'
       stream(loop: true, async: true) do |out|
-        Components::Messages::Component.stream(out)
+        MessagesComponent::Component.stream(out)
       end
     end
 
     r.post "message" do
-      Components::Messages::Component.add(
+      MessagesComponent::Component.add(
         message: r.params["message"],
         sseid: r.params["sseid"])
 
       "ok"
     end
-
   end
 end
