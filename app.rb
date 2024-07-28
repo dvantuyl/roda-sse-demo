@@ -36,7 +36,9 @@ class App < Roda
     end
 
     r.post "message" do
-      Components::Messages::Component.add(r.params["message"])
+      Components::Messages::Component.add(
+        message: r.params["message"],
+        sseid: r.params["sseid"])
 
       "ok"
     end

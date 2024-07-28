@@ -7,11 +7,8 @@ module Components
     class Component
       class << self
 
-        def sseid
-          'Components::Messages::Component'
-        end
-
         def render
+          sseid = SecureRandom.uuid #'Components::Messages::Component'
           FormComponent.render(sseid) +
           ListComponent.render(sseid)
         end
@@ -31,7 +28,7 @@ module Components
           end
         end
 
-        def add(message)
+        def add(message:, sseid:)
           MessageModel.add(message: message, sseid: sseid)
         end
 
